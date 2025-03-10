@@ -20,6 +20,10 @@ app.use(express.json());
 app.use("/users", userRoutes);
 app.use("/cards", cardRoutes);
 
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ message: "Страница не найдена" });
+});
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });

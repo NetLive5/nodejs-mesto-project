@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export interface ICard extends Document {
   name: string;
@@ -21,12 +21,12 @@ const cardSchema = new mongoose.Schema({
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    ref: 'user',
     required: true,
   },
   likes: {
     type: [mongoose.Schema.Types.ObjectId],
-    ref: "user",
+    ref: 'user',
     default: [],
   },
   createdAt: {
@@ -35,4 +35,4 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model<ICard>("card", cardSchema);
+export default mongoose.model<ICard>('card', cardSchema);
