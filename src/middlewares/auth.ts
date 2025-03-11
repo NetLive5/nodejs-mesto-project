@@ -6,7 +6,7 @@ interface tokenPayload {
   _id: string;
 }
 
-const JWT_SECRET = "super-strong-secret";
+const { JWT_SECRET = "super-strong-secret" } = process.env;
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

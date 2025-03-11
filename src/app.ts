@@ -1,4 +1,5 @@
 import { errors } from "celebrate";
+import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import { createUser, login } from "./controllers/users";
@@ -12,6 +13,7 @@ import userRoutes from "./routes/users";
 
 const app = express();
 const PORT = 3000;
+dotenv.config();
 
 mongoose.connect("mongodb://localhost:27017/mestodb");
 
@@ -19,6 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(requestLogger);
+
 app.post("/signin", validateLogin, login);
 app.post("/signup", validateCreateUser, createUser);
 
