@@ -11,9 +11,9 @@ import { validateCardId, validateCreateCard } from "../middlewares/validation";
 const router = Router();
 
 router.get("/", getCards);
-router.post("/", createCard, validateCreateCard);
-router.delete("/:cardId", deleteCard, validateCardId);
-router.put("/:cardId/likes", likeCard, validateCardId);
-router.delete("/:cardId/likes", dislikeCard, validateCardId);
+router.post("/", validateCreateCard, createCard);
+router.delete("/:cardId", validateCardId, deleteCard);
+router.put("/:cardId/likes", validateCardId, likeCard);
+router.delete("/:cardId/likes", validateCardId, dislikeCard);
 
 export default router;

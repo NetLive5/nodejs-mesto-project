@@ -61,19 +61,16 @@ export const deleteCard = async (
     const { cardId } = req.params;
     const userId = req.user!._id;
 
-    // Сначала находим карточку, чтобы проверить владельца
     const card = await Card.findById(cardId);
 
     if (!card) {
       return next(new NotFoundError("Карточка не найдена"));
     }
 
-    // Проверяем, является ли текущий пользователь владельцем карточки
     if (card.owner.toString() !== userId) {
       return next(new ForbiddenError("Нет прав на удаление этой карточки"));
     }
 
-    // Если все проверки пройдены, удаляем карточку
     await Card.findByIdAndRemove(cardId);
 
     return res.send({ message: "Карточка удалена" });
