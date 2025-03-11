@@ -1,91 +1,184 @@
-import { Request, Response } from 'express';
-import User from '../models/user';
+import bcrypt from "bcryptjs";
+import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import {
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../errors/errors";
+import User from "../models/user";
 
-export const getUsers = async (req: Request, res: Response) => {
+const JWT_SECRET = "super-strong-secret";
+
+export const getCurrentUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user!._id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(new NotFoundError("Пользователь не найден"));
+    }
+    return res.status(200).send(user);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const getUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const users = await User.find({});
     return res.send(users);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Произошла ошибка на сервере' });
+    return next(err);
   }
 };
 
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { userId } = req.params;
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).send({ message: 'Пользователь не найден' });
+      return next(new NotFoundError("Пользователь не найден"));
     }
 
     return res.send(user);
   } catch (err) {
-    console.error(err);
-    if (err instanceof Error && err.name === 'CastError') {
-      return res.status(400).send({ message: 'Некорректный id пользователя' });
+    if (err instanceof Error && err.name === "CastError") {
+      return next(new BadRequestError("Некорректный id пользователя"));
     }
-    return res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    return next(err);
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { name, about, avatar } = req.body;
-    const user = await User.create({ name, about, avatar });
-    return res.status(201).send(user);
+    const { name, about, avatar, email, password } = req.body;
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    });
+    return res.status(201).send({
+      _id: user._id,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+    });
   } catch (err) {
-    console.error(err);
-    if (err instanceof Error && err.name === 'ValidationError') {
-      return res.status(400).send({ message: 'Переданы некорректные данные' });
+    if (err instanceof Error && err.name === "ValidationError") {
+      return next(
+        new BadRequestError(
+          "Переданы некорректные данные при создании пользователя"
+        )
+      );
     }
-    return res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    return next(err);
   }
 };
 
-export const updateUserProfile = async (req: Request, res: Response) => {
+export const updateUserProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { name, about } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user!._id,
       { name, about },
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     );
 
     if (!user) {
-      return res.status(404).json({ message: 'Пользователь не найден' });
+      return next(new NotFoundError("Пользователь не найден"));
     }
 
     return res.status(200).json(user);
   } catch (err) {
-    console.error(err);
-    if (err instanceof Error && err.name === 'ValidationError') {
-      return res.status(400).json({ message: 'Переданы некорректные данные' });
+    if (err instanceof Error && err.name === "ValidationError") {
+      return next(
+        new BadRequestError(
+          "Переданы некорректные данные при обновлении профиля"
+        )
+      );
     }
-    return res.status(500).json({ message: 'Произошла ошибка на сервере' });
+    return next(err);
   }
 };
 
-export const updateUserAvatar = async (req: Request, res: Response) => {
+export const updateUserAvatar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { avatar } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user!._id,
       { avatar },
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     );
 
     if (!user) {
-      return res.status(404).json({ message: 'Пользователь не найден' });
+      return next(new NotFoundError("Пользователь не найден"));
     }
 
     return res.status(200).json(user);
   } catch (err) {
-    console.error(err);
-    if (err instanceof Error && err.name === 'ValidationError') {
-      return res.status(400).json({ message: 'Переданы некорректные данные' });
+    if (err instanceof Error && err.name === "ValidationError") {
+      return next(
+        new BadRequestError(
+          "Переданы некорректные данные при обновлении аватара"
+        )
+      );
     }
-    return res.status(500).json({ message: 'Произошла ошибка на сервере' });
+    return next(err);
+  }
+};
+
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return next(new UnauthorizedError("Неправильные почта или пароль"));
+    }
+
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+
+    res.cookie("jwt", token, {
+      maxAge: 604800000,
+      httpOnly: true,
+      sameSite: true,
+    });
+    return res.send({ token, message: "Авторизация успешна" });
+  } catch (err) {
+    return next(err);
   }
 };
