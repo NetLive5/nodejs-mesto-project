@@ -33,9 +33,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next(new NotFoundError("Маршрут не найден"));
 });
 
-app.use(errorHandler);
 app.use(errorLogger);
 app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
