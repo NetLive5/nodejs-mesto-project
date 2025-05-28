@@ -6,3 +6,7 @@
 - Node.js в качестве среды выполнения
 
 Перед отправкой работы на проверку убедитесь что она соответствует требованиям проектной работы
+
+IP адрес: 158.160.100.179  
+Frontend: https://domainname.students2510.nomorepartiessbs.ru  
+Backend: https://api.domainname.students.s.nomorepartiessbs.ru
