@@ -1,3 +1,4 @@
+import cors from "cors";
 import { errors } from "celebrate";
 import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
@@ -14,6 +15,15 @@ import userRoutes from "./routes/users";
 const app = express();
 const PORT = 3000;
 dotenv.config();
+
+const allowedOrigins = ["https://domainname.students2510.nomorepartiessbs.ru"];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
 mongoose.connect("mongodb://localhost:27017/mestodb");
 
