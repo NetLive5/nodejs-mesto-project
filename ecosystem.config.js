@@ -2,8 +2,7 @@ module.exports = {
   apps: [
     {
       name: "mesto",
-      script: "./src/app.ts", // запускаем TypeScript напрямую
-      interpreter: "ts-node", // через ts-node
+      script: "./dist/app.js",
       env_production: {
         NODE_ENV: "production",
       },
@@ -17,7 +16,7 @@ module.exports = {
       repo: "git@github.com:NetLive5/nodejs-mesto-project.git",
       path: "/home/praktikum/mesto-backend",
       "post-deploy":
-        "npm ci && pm2 reload ecosystem.config.js --env production",
+        "npm ci && npm run build && pm2 reload ecosystem.config.js --env production",
     },
   },
 };
