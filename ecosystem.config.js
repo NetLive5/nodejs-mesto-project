@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: "mesto",
-      script: "src/app.ts",
-      interpreter: "ts-node",
+      script: "./src/app.ts", // запускаем TypeScript напрямую
+      interpreter: "ts-node", // через ts-node
       env_production: {
         NODE_ENV: "production",
       },
