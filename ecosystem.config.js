@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: "mesto",
-      script: "./src/app.js",
+      script: "src/app.ts",
+      interpreter: "ts-node",
       env_production: {
         NODE_ENV: "production",
       },
